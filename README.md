@@ -9,4 +9,5 @@ Support **Leo**, the developer of the game, instead. This was light work compare
 ### Credits
 - DukeOfCaffeineton (Frontend & final touches)
 - Fish in a box (Algorithm & misc)
+
 Built in 2 days time with love.
