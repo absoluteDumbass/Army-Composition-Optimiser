@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lines of Battle - Army Composition Optimizer</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: var(--dark);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 20px;
+        }
+        
+        h1 {
+            color: var(--primary);
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .game-mode {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            min-width: 120px;
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: var(--light);
+            border: 2px solid var(--secondary);
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn:hover {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .mode-btn.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .resources {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .resource {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            background-color: var(--light);
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+        
+        .resource h3 {
+            margin: 0 0 10px 0;
+        }
+        
+        .resource-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .units-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .units-table th, .units-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .units-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .units-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .unit-controls {
+            display: flex;
+            align-items: center;
+        }
+        
+        .unit-btn {
+            width: 30px;
+            height: 30px;
+            font-size: 1.2rem;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .unit-count {
+            width: 50px;
+            text-align: center;
+            margin: 0 10px;
+        }
+        
+        .unit-toggle {
+            margin-left: 10px;
+        }
+        
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-optimize {
+            background-color: var(--accent);
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .result {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .loader {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 5px solid var(--secondary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .setup {
+                flex: 1;
+                min-width: 300px;
+            }
+            
+            .result {
+                flex: 1;
+                min-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lines of Battle - Army Composition Optimizer</h1>
+        <p>Optimize your army composition for different game modes</p>
+    </header>
+    
+    <div class="container">
+        <div class="setup card">
+            <h2>Setup</h2>
+            
+            <div>
+                <h3>Game Mode</h3>
+                <div class="game-mode">
+                    <button class="mode-btn active" data-mode="clash">Clash</button>
+                    <button class="mode-btn" data-mode="combat">Combat</button>
+                    <button class="mode-btn" data-mode="battle">Battle</button>
+                    <button class="mode-btn" data-mode="grandbattle">Grand Battle</button>
+                </div>
+            </div>
+            
+            <div class="resources-section">
+                <h3>Resources</h3>
+                <div class="resources">
+                    <div class="resource">
+                        <h3>Manpower</h3>
+                        <div class="resource-value" id="manpower">2275</div>
+                        <div>Available: <span id="manpower-left">2275</span></div>
+                    </div>
+                    <div class="resource">
+                        <h3>Gold</h3>
+                        <div class="resource-value" id="gold">1200</div>
+                        <div>Available: <span id="gold-left">1200</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>Units</h3>
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>Unit</th>
+                            <th>Manpower</th>
+                            <th>Gold</th>
+                            <th>Count</th>
+                            <th>Include</th>
+                        </tr>
+                    </thead>
+                    <tbody id="units-tbody">
+                        <!-- Units will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn" id="reset-btn">Reset</button>
+                <button class="btn btn-optimize" id="optimize-btn">Optimize Composition</button>
+            </div>
+        </div>
+        
+        <div class="result card" id="result-section">
+            <h2>Optimized Composition</h2>
+            <div class="loader" id="loader">
+                <div class="spinner"></div>
+                <p>Optimizing your army composition...</p>
+            </div>
+            <div id="optimization-result">
+                <!-- Results will be displayed here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Army composition data
+        const cost = {
+            // name: [manpower, gold],
+            line_infantry: [200, 50],
+            light_infantry: [225, 75],
+            guard: [300, 75],
+            hussar: [100, 125],
+            lancer: [150, 150],
+            cuirassier: [150, 200],
+            "12lb": [25, 300],
+            howitzer: [25, 250],
+            horse_artillery: [25, 200],
+        };
+        
+        const budget = {
+            // name: [manpower, gold]
+            clash: [2150, 1200],
+            combat: [3550, 1975],
+            battle: [5175, 3000],
+            grandbattle: [10550, 6000],
+        };
+        
+        const unitDisplayNames = {
+            line_infantry: "Line Infantry",
+            light_infantry: "Light Infantry",
+            guard: "Guard",
+            hussar: "Hussar",
+            lancer: "Lancer",
+            cuirassier: "Cuirassier",
+            "12lb": "12lb Artillery",
+            howitzer: "Howitzer",
+            horse_artillery: "Horse Artillery",
+        };
+        
+        // State
+        let currentMode = "clash";
+        let composition = {
+            line_infantry: 2,
+            light_infantry: 4,
+            guard: 2,
+            hussar: 2,
+            lancer: 0,
+            cuirassier: -1,
+            "12lb": -1,
+            howitzer: -1,
+            horse_artillery: 2,
+        };
+        
+        // DOM elements
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const optimizeBtn = document.getElementById('optimize-btn');
+        const unitsTbody = document.getElementById('units-tbody');
+        const manpowerElement = document.getElementById('manpower');
+        const goldElement = document.getElementById('gold');
+        const manpowerLeftElement = document.getElementById('manpower-left');
+        const goldLeftElement = document.getElementById('gold-left');
+        const resultSection = document.getElementById('result-section');
+        const loader = document.getElementById('loader');
+        const optimizationResult = document.getElementById('optimization-result');
+        
+        // Initialize
+        function init() {
+            updateResourceDisplay();
+            populateUnitsTable();
+            
+            // Event listeners
+            modeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMode = btn.dataset.mode;
+                    updateResourceDisplay();
+                    updateResourcesLeft();
+                });
+            });
+            
+            resetBtn.addEventListener('click', resetComposition);
+            optimizeBtn.addEventListener('click', optimizeComposition);
+        }
+        
+        function updateResourceDisplay() {
+            const [manpower, gold] = budget[currentMode];
+            manpowerElement.textContent = manpower;
+            goldElement.textContent = gold;
+            updateResourcesLeft();
+        }
+        
+        function populateUnitsTable() {
+            unitsTbody.innerHTML = '';
+            
+            for (const unit in cost) {
+                const [manpower, gold] = cost[unit];
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${unitDisplayNames[unit]}</td>
+                    <td>${manpower}</td>
+                    <td>${gold}</td>
+                    <td>
+                        <div class="unit-controls">
+                            <button class="unit-btn" data-unit="${unit}" data-action="decrease">-</button>
+                            <span class="unit-count" id="${unit}-count">${composition[unit] >= 0 ? composition[unit] : 0}</span>
+                            <button class="unit-btn" data-unit="${unit}" data-action="increase">+</button>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="checkbox" class="unit-toggle" data-unit="${unit}" ${composition[unit] >= 0 ? 'checked' : ''}>
+                    </td>
+                `;
+                
+                unitsTbody.appendChild(row);
+            }
+            
+            // Add event listeners to buttons and checkboxes
+            document.querySelectorAll('.unit-btn').forEach(btn => {
+                btn.addEventListener('click', handleUnitCountChange);
+            });
+            
+            document.querySelectorAll('.unit-toggle').forEach(checkbox => {
+                checkbox.addEventListener('change', handleUnitToggle);
+            });
+        }
+        
+        function handleUnitCountChange(e) {
+            const unit = e.target.dataset.unit;
+            const action = e.target.dataset.action;
+            
+            if (composition[unit] < 0) {
+                composition[unit] = 0;
+            }
+            
+            if (action === 'increase') {
+                composition[unit]++;
+            } else if (action === 'decrease' && composition[unit] > 0) {
+                composition[unit]--;
+            }
+            
+            document.getElementById(`${unit}-count`).textContent = composition[unit];
+            updateResourcesLeft();
+        }
+        
+        function handleUnitToggle(e) {
+            const unit = e.target.dataset.unit;
+            const isChecked = e.target.checked;
+            
+            if (isChecked) {
+                if (composition[unit] < 0) {
+                    composition[unit] = 0;
+                }
+            } else {
+                composition[unit] = -1;
+                document.getElementById(`${unit}-count`).textContent = 0;
+            }
+            
+            updateResourcesLeft();
+        }
+        
+        function totalCost(comp) {
+            let manpower = 0;
+            let gold = 0;
+            
+            for (let unit in comp) {
+                if (comp[unit] > 0) {
+                    manpower += cost[unit][0] * comp[unit];
+                    gold += cost[unit][1] * comp[unit];
+                }
+            }
+            
+            return [manpower, gold];
+        }
+        
+        function budgetLeft(costArray) {
+            let [manpower, gold] = budget[currentMode];
+            return [manpower - costArray[0], gold - costArray[1]];
+        }
+        
+        function updateResourcesLeft() {
+            const costs = totalCost(composition);
+            const [manpowerLeft, goldLeft] = budgetLeft(costs);
+            
+            manpowerLeftElement.textContent = manpowerLeft;
+            goldLeftElement.textContent = goldLeft;
+            
+            // Change color based on remaining resources
+            manpowerLeftElement.style.color = manpowerLeft < 0 ? 'red' : 'inherit';
+            goldLeftElement.style.color = goldLeft < 0 ? 'red' : 'inherit';
+        }
+        
+        function resetComposition() {
+            composition = {
+                line_infantry: 2,
+                light_infantry: 4,
+                guard: 2,
+                hussar: 2,
+                lancer: 0,
+                cuirassier: -1,
+                "12lb": -1,
+                howitzer: -1,
+                horse_artillery: 2,
+            };
+            
+            populateUnitsTable();
+            updateResourcesLeft();
+            resultSection.classList.remove('show');
+        }
+        
+        function hash(obj) {
+            const str = JSON.stringify(obj);
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = (hash * 31 + char) | 0;
+            }
+            return hash.toString(16);
+        }
+        
+        function optimizeComposition() {
+            // Show loading state
+            resultSection.classList.add('show');
+            loader.style.display = 'block';
+            optimizationResult.innerHTML = '';
+            
+            // Clean up composition to only include enabled units
+            let startingComp = {};
+            for (let unit in composition) {
+                if (composition[unit] >= 0) {
+                    startingComp[unit] = composition[unit];
+                }
+            }
+            
+            // Start optimization process
+            let previousPly = [startingComp];
+            let ply = [];
+            let hashes = [hash(startingComp)];
+            let plyCount = 0;
+            let done = false;
+            let solution = null;
+            
+            // Set timeout to prevent blocking UI
+            setTimeout(function runOptimization() {
+                if (done) {
+                    displayResults(solution);
+                    return;
+                }
+                
+                for (let i = 0; i < previousPly.length; i++) {
+                    for (let unit in previousPly[i]) {
+                        for (let j = 0; j < 2; j++) {
+                            let current = structuredClone(previousPly[i]);
+                            current[unit] += (j * 2) - 1; // -1 if j=0, +1 if j=1
+                            if (current[unit] < 0) continue;
+                            
+                            let budget = budgetLeft(totalCost(current));
+                            if (budget[0] >= 0 && budget[1] >= 0) {
+                                if (budget[0] === 0 && budget[1] === 0) {
+                                    solution = current;
+                                    done = true;
+                                }
+                                
+                                const currentHash = hash(current);
+                                if (!hashes.includes(currentHash)) {
+                                    ply.push(current);
+                                    hashes.push(currentHash);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                previousPly = ply;
+                ply = [];
+                plyCount++;
+                
+                // Display optimization progress
+                optimizationResult.innerHTML = `<p>Searching... Ply ${plyCount} (${previousPly.length} combinations)</p>`;
+                
+                // If nothing found after 10 plies or solution found, stop
+                if (plyCount > 10 || done) {
+                    if (!done) {
+                        // Find best partial solution
+                        let bestComp = null;
+                        let minLeftover = Infinity;
+                        
+                        for (let comp of previousPly) {
+                            const [manLeft, goldLeft] = budgetLeft(totalCost(comp));
+                            if (manLeft >= 0 && goldLeft >= 0) {
+                                const leftover = manLeft + goldLeft;
+                                if (leftover < minLeftover) {
+                                    minLeftover = leftover;
+                                    bestComp = comp;
+                                }
+                            }
+                        }
+                        
+                        solution = bestComp || startingComp;
+                    }
+                    
+                    displayResults(solution);
+                } else {
+                    setTimeout(runOptimization, 0); // Continue optimization
+                }
+            }, 0);
+        }
+        
+        function displayResults(solution) {
+            loader.style.display = 'none';
+            
+            if (!solution) {
+                optimizationResult.innerHTML = `
+                    <div class="alert">
+                        <p>Could not find an optimal solution. Try adjusting your unit selections.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const costs = totalCost(solution);
+            const [manpowerLeft, goldLeft] = budgetLeft(costs);
+            
+            let resultHTML = `
+                <div class="resources">
+                    <div class="resource">
+                        <h3>Manpower</h3>
+                        <div class="resource-value">${costs[0]}</div>
+                        <div>Remaining: ${manpowerLeft}</div>
+                    </div>
+                    <div class="resource">
+                        <h3>Gold</h3>
+                        <div class="resource-value">${costs[1]}</div>
+                        <div>Remaining: ${goldLeft}</div>
+                    </div>
+                </div>
+                
+                <table class="units-table">
+                    <thead>
+                        <tr>
+                            <th>Unit</th>
+                            <th>Count</th>
+                            <th>Manpower</th>
+                            <th>Gold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            for (const unit in solution) {
+                if (solution[unit] > 0) {
+                    resultHTML += `
+                        <tr>
+                            <td>${unitDisplayNames[unit]}</td>
+                            <td><strong>${solution[unit]}</strong></td>
+                            <td>${cost[unit][0] * solution[unit]}</td>
+                            <td>${cost[unit][1] * solution[unit]}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            resultHTML += `
+                    </tbody>
+                </table>
+                
+                <div class="buttons">
+                    <button class="btn" id="apply-btn">Apply to Setup</button>
+                </div>
+            `;
+            
+            optimizationResult.innerHTML = resultHTML;
+            
+            // Add event listener to the apply button
+            document.getElementById('apply-btn').addEventListener('click', () => {
+                composition = {...composition, ...solution};
+                populateUnitsTable();
+                updateResourcesLeft();
+            });
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
