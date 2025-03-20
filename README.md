@@ -1,7 +1,7 @@
 # Army Composition Optimiser
-Is a tool made to **eliminate any remaining manpower or gold** within an army composition
+A tool designed to **fully utilize all available manpower and gold** in an army composition.
 
-[Lines of Battle](https://linesofbattle.net/) is the game we made this for.
+Made for [Lines of Battle](https://linesofbattle.net/).
 
-## Don't support us
-Support Leo the developer of the game instead. This is light work compared to his workload.
+## Don't Support Us
+Support **Leo**, the developer of the game, instead. This was light work compared to his workload.
