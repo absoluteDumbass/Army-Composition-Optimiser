@@ -833,7 +833,7 @@
             // Start optimization process
             let previousPly = [startingComp];
             let ply = [];
-            let hashes = [hash(startingComp)];
+            let hashes = new Set(hash(startingComp));
             let plyCount = 0;
             let done = false;
             let solution = null;
@@ -860,9 +860,9 @@
                                 }
                                 
                                 const currentHash = hash(current);
-                                if (!hashes.includes(currentHash)) {
+                                if (!hashes.has(currentHash)) {
                                     ply.push(current);
-                                    hashes.push(currentHash);
+                                    hashes.add(currentHash);
                                 }
                             }
                         }
