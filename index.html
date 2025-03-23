@@ -14,7 +14,7 @@
             --accent: #d4af37;
             --light: #f8f3e4;
             --dark: #1e1a10;
-            --table-name: #efefef;
+            --table-header: #efefef;
             --parchment: #f5eacc;
             --navy: #283359;
             --french-blue: #1a3564;
@@ -33,7 +33,7 @@
             --accent: #ffd700;
             --light: #151515;
             --dark: #e5e1d8;
-            --table-name: #dfdfdf;
+            --table-header: #dfdfdf;
             --parchment: #222222;
             --navy: #243352;
             --french-blue: #284b8c;
@@ -218,6 +218,11 @@
             transition: color 0.3s;
         }
         
+        .units-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
         .units-table {
             width: 100%;
             border-collapse: collapse;
@@ -234,7 +239,7 @@
         
         .units-table th {
             background-color: var(--navy);
-            color: var(--table-name);
+            color: var(--table-header);
             font-family: 'Cinzel', serif;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -459,6 +464,10 @@
             font-size: 20px;
         }
         
+        .optimization-result {
+            overflow-x: auto;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -478,6 +487,10 @@
             .result {
                 flex: 1;
                 min-width: 300px;
+            }
+            
+            .result-nav-button {
+                margin: 30px;
             }
         }
     </style>
@@ -534,9 +547,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div>
-                <h3>Regimental Roster</h3>
+            <h3>Regimental Roster</h3>
+            <div class="units-table-container">
                 <table class="units-table">
                     <thead>
                         <tr>
@@ -825,28 +837,24 @@
             optimizationResult.innerHTML = '';
             
             // Clean up composition to only include enabled units
-            let startingComp = {};
+            let startingComp = [ {}, ];
             for (let unit in composition) {
                 if (composition[unit] >= 0) {
-                    startingComp[unit] = composition[unit];
+                    startingComp[0][unit] = composition[unit];
                 }
             }
             
             // Start optimization process
-            let previousPly = [startingComp];
+            let previousPly = startingComp
             let ply = [];
             let hashes = new Set(hash(startingComp));
             let plyCount = 0;
-            let done = false;
-            let solution = null;
+            let hasFoundBestSolution = false
+            let solutions = []
             
             // Set timeout to prevent blocking UI
             setTimeout(function runOptimization() {
-                if (done) {
-                    displayResults(solution);
-                    return;
-                }
-                
+            
                 for (let i = 0; i < previousPly.length; i++) {
                     for (let unit in previousPly[i]) {
                         for (let j = 0; j < 2; j++) {
@@ -856,12 +864,13 @@
                             
                             let budget = budgetLeft(totalCost(current));
                             if (budget[0] >= 0 && budget[1] >= 0) {
-                                if (budget[0] === 0 && budget[1] === 0) {
-                                    solution = current;
-                                    done = true;
+                                const currentHash = hash(current);
+                                
+                                if (budget[0] === 0 && budget[1] === 0 && !hashes.has(currentHash)) {
+                                    solutions.push(current)
+                                    hasFoundBestSolution = true
                                 }
                                 
-                                const currentHash = hash(current);
                                 if (!hashes.has(currentHash)) {
                                     ply.push(current);
                                     hashes.add(currentHash);
@@ -879,10 +888,10 @@
                 optimizationResult.innerHTML = `<p>The Imperial Staff is deliberating... Strategy iteration ${plyCount} (${previousPly.length} combinations)</p>`;
                 
                 // If nothing found after 10 plies or solution found, stop
-                if (plyCount > 10 || done) {
-                    if (!done) {
+                if (plyCount > 10) {
+                    if (!hasFoundBestSolution) {
                         // Find best partial solution
-                        let bestComp = null;
+                        let bestComps = []
                         let minLeftover = Infinity;
                         
                         for (let comp of previousPly) {
@@ -891,24 +900,29 @@
                                 const leftover = manLeft + goldLeft;
                                 if (leftover < minLeftover) {
                                     minLeftover = leftover;
-                                    bestComp = comp;
+                                    bestComps = [comp]
+                                }
+                                else if(leftover == minLeftover) {
+                                    bestComps.push(comp)
                                 }
                             }
                         }
                         
-                        solution = bestComp || startingComp;
+                        solutions = bestComps || startingComp;
                     }
                     
-                    displayResults(solution);
+                    displayResults(solutions, 0);
                 } else {
                     setTimeout(runOptimization, 0); // Continue optimization
                 }
             }, 0);
         }
         
-        function displayResults(solution) {
+        function displayResults(solutions, solutionIndex) {
+            console.warn(solutions.length)
+            const solution = solutions[solutionIndex]
+            optimizationResult.innerHTML = ``
             loader.style.display = 'none';
-            
             if (!solution) {
                 optimizationResult.innerHTML = `
                     <div class="alert">
@@ -939,18 +953,19 @@
                     </div>
                 </div>
                 
-                <h3>Optimal Deployment <span class="emblem">⚔</span></h3>
+                <h3>Optimal Deployment ${solutionIndex+1} / ${solutions.length}<span class="emblem">⚔</span></h3>
                 
-                <table class="units-table">
-                    <thead>
-                        <tr>
-                            <th>Regiment</th>
-                            <th>Battalions</th>
-                            <th>Manpower</th>
-                            <th>Gold</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="optimization-result">
+                    <table class="units-table">
+                        <thead>
+                            <tr>
+                                <th>Regiment</th>
+                                <th>Battalions</th>
+                                <th>Manpower</th>
+                                <th>Gold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
             for (const unit in solution) {
@@ -967,15 +982,19 @@
             }
             
             resultHTML += `
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
                 
                 <div class="decoration">
                     <hr><span>✠</span><hr>
                 </div>
                 
                 <div class="buttons">
+                    <button class="btn result-nav-button" id="previous-solution-button"> < </button>
                     <button class="btn" id="apply-btn">Implement Battle Plan</button>
+                    <button class="btn result-nav-button" id="next-solution-button"> > </button>
+                    
                 </div>
             `;
             
@@ -987,6 +1006,16 @@
                 populateUnitsTable();
                 updateResourcesLeft();
             });
+            
+            document.getElementById("previous-solution-button").addEventListener("click", () => {
+                if(solutionIndex < 1){ return }
+                displayResults(solutions, solutionIndex - 1)
+            })
+            
+            document.getElementById("next-solution-button").addEventListener("click", () => {
+                if(solutionIndex + 1 > solutions.length - 1){ return }
+                displayResults(solutions, solutionIndex + 1)
+            })
         }
         
         // Initialize the application
