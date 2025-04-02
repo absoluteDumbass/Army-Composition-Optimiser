@@ -19,7 +19,7 @@ const budget = {
   // name: [manpower, gold]
   skirmish: [1425, 725],
   clash: [2500, 1500],
-  combat: [4000, 2350],
+  combat: [4750, 2450],
   battle: [8000, 4400],
   grandbattle: [15000, 7500],
 }
