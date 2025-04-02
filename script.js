@@ -478,3 +478,43 @@ function displayResults(solutions, solutionIndex) {
 
 // Initialize the application
 document.addEventListener("DOMContentLoaded", init);
+
+var slideTimeMilis = 600;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modalWindow = document.getElementById('guide-modal');
+    const modal = document.getElementsByClassName('modal-content')[0];
+    const guideBtn = document.getElementById('guide-btn');
+    const closeBtn = document.querySelector('.close');
+    
+    // Open the modal when the guide button is clicked
+    guideBtn.addEventListener('click', function() {
+        modalWindow.style.display = 'block';
+        modal.classList.toggle('showing');
+        modal.classList.toggle('hiding');
+    });
+    
+    // Close the modal when the close button is clicked
+    closeBtn.addEventListener('click', function() {
+        
+        setTimeout(function() {
+            modalWindow.style.display = 'none';
+        }, slideTimeMilis); // Wait for the hiding animation to finish
+
+        modal.classList.toggle('showing');
+        modal.classList.toggle('hiding');
+    });
+    
+    // Close the modal when clicking outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target === modalWindow) {
+            
+            setTimeout(function() {
+                modalWindow.style.display = 'none';
+            }, slideTimeMilis); // Wait for the hiding animation to finish
+
+            modal.classList.toggle('showing');
+            modal.classList.toggle('hiding');
+        }
+    });
+});
