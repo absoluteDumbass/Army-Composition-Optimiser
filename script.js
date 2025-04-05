@@ -11,7 +11,7 @@ const cost = {
   cuirassier: [175, 150],
   "12lb": [50, 325],
   "8lb": [25, 275],
-  howitzer: [25, 200],
+  howitzer: [50, 200],
   horse_artillery: [75, 200],
 }
 
