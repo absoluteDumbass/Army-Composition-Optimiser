@@ -2,17 +2,19 @@
 const cost = {
   // name: [manpower, gold],
   line_infantry: [200, 50],
-  light_infantry: [225, 75],
+  light_infantry: [200, 75],
   guard: [300, 75],
-  militia: [125, 25],
-  hussar: [100, 125],
-  lancer: [125, 150],
-  dragoon: [150, 125],
-  cuirassier: [175, 150],
-  "12lb": [50, 325],
+  grenadier: [275, 50],
+  militia: [150, 25],
+  hussar: [75, 100],
+  lancer: [100, 125],
+  dragoon: [125, 100],
+  cuirassier: [150, 125],
+  "12lb": [50, 350],
   "8lb": [25, 275],
+  "4lb": [25, 175],
   howitzer: [50, 200],
-  horse_artillery: [75, 200],
+  horse_artillery: [75, 225],
 }
 
 const budget = {
@@ -28,6 +30,7 @@ const unitDisplayNames = {
     line_infantry: "Line Infantry",
     light_infantry: "Light Infantry",
     guard: "Guards",
+    grenadier: "Grenadiers",
     militia: "Militia",
     hussar: "Hussars",
     lancer: "Lancers",
@@ -35,23 +38,24 @@ const unitDisplayNames = {
     cuirassier: "Cuirassiers",
     "12lb": "12-lb Foot Artillery",
     "8lb": "8-lb Foot Artillery",
+    "4lb": "4-lb Foot Artillery",
     howitzer: "6-in Howitzers",
     horse_artillery: "4-lb Horse Artillery",
 };
 
 // State
-let currentMode = "clash";
+let currentMode = "grandbattle";
 let composition = {
-    line_infantry: 9,
-    light_infantry: -1,
-    guard: -1,
+    line_infantry: 50,
+    light_infantry: 10,
+    guard: 0,
     militia: -1,
-    hussar: 1,
-    lancer: -1,
-    dragoon: 3,
-    cuirassier: -1,
-    "12lb": -1,
-    "8lb": 2,
+    hussar: 0,
+    lancer: 6,
+    dragoon: 4,
+    cuirassier: 7,
+    "12lb": 0,
+    "8lb": 6,
     howitzer: -1,
     horse_artillery: -1,
 };
@@ -240,6 +244,7 @@ function resetComposition() {
         line_infantry: 0,
         light_infantry: 0,
         guard: 0,
+        grenadier: 0,
         militia: 0,
         hussar: 0,
         lancer: 0,
@@ -247,6 +252,7 @@ function resetComposition() {
         cuirassier: 0,
         "12lb": 0,
         "8lb": 0,
+        "4lb": 0,
         howitzer: 0,
         horse_artillery: 0,
     };
@@ -282,10 +288,11 @@ function optimizeComposition() {
 
     // Start optimization process
     let previousPly = [startingComp];
+    console.log(startingComp)
     let ply = [];
     let hashes = new Set(hash(startingComp));
-    let max = totalCost(startingComp)
-    let curmax = max
+    let max = [100000, 100000];
+    let curmax = [0, 0]
     let plyCount = 0;
     let hasFoundBestSolution = false;
     let solutions = [];
@@ -296,29 +303,31 @@ function optimizeComposition() {
             for (let unit in previousPly[i]) {
                 for (let j = 0; j < 2; j++) {
                     let current = structuredClone(previousPly[i]);
-                    current[unit] += j * 2 - 1; // -1 if j=0, +1 if j=1
+                    current[unit] += (j * 2) - 1; // -1 if j=0, +1 if j=1
                     if (current[unit] < 0) continue;
 
                     let budget = budgetLeft(totalCost(current));
-                    if (budget[0] >= 0 && budget[1] >= 0) {
+                    if (budget[0] >= 0 && 
+                        budget[1] >= 0 && 
+                        budget[0] < max[0] && 
+                        budget[1] < max[1]) {
                         // clamp down on comps with too much leftovers
-                        curmax[0] = Math.max(budget[0], 1000);
-                        curmax[1] = Math.max(budget[1], 1000);
+                        curmax[0] = Math.max(budget[0], 650);
+                        curmax[1] = Math.max(budget[1], 650);
                         
                         const currentHash = hash(current);
 
-                        if (
-                            budget[0] === 0 &&
-                            budget[1] === 0 &&
-                            !hashes.has(currentHash)
-                        ) {
-                            solutions.push(current);
-                            hasFoundBestSolution = true;
-                        }
-
                         if (!hashes.has(currentHash)) {
-                            ply.push(current);
-                            hashes.add(currentHash);
+                          if (
+                              budget[0] == 0 &&
+                              budget[1] == 0
+                          ) {
+                              solutions.push(current);
+                              hasFoundBestSolution = true;
+                          }
+
+                          ply.push(current);
+                          hashes.add(currentHash);
                         }
                     }
                 }
@@ -327,7 +336,7 @@ function optimizeComposition() {
 
         max = curmax;
         if (ply.length < 100) {
-          max = [10000, 10000];
+          max = [100000, 100000];
         }
         previousPly = ply;
         ply = [];
@@ -367,7 +376,7 @@ function optimizeComposition() {
 }
 
 function displayResults(solutions, solutionIndex) {
-    console.warn(solutions.length);
+  console.log(solutions)
     const solution = solutions[solutionIndex];
     optimizationResult.innerHTML = ``;
     loader.style.display = "none";
