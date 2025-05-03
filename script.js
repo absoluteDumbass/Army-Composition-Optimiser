@@ -6,10 +6,10 @@ const cost = {
   guard: [300, 75],
   grenadier: [275, 50],
   militia: [150, 25],
-  hussar: [75, 100],
-  lancer: [100, 125],
-  dragoon: [125, 100],
-  cuirassier: [150, 125],
+  hussar: [75, 75],
+  lancer: [100, 100],
+  dragoon: [125, 75],
+  cuirassier: [150, 100],
   "12lb": [50, 350],
   "8lb": [25, 275],
   "4lb": [25, 175],
@@ -20,9 +20,9 @@ const cost = {
 const budget = {
   // name: [manpower, gold]
   skirmish: [1500, 650],
-  clash: [2700, 1500],
-  combat: [4400, 2450],
-  battle: [7500, 4250],
+  clash: [2700, 1450],
+  combat: [4475, 2200],
+  battle: [6750, 4250],
   grandbattle: [14000, 7500],
 }
 
