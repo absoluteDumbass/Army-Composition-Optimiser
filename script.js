@@ -9,7 +9,7 @@ const cost = {
   hussar: [75, 75],
   lancer: [100, 100],
   dragoon: [125, 75],
-  cuirassier: [150, 100],
+  cuirassier: [175, 100],
   "12lb": [50, 350],
   "8lb": [25, 275],
   "4lb": [25, 175],
