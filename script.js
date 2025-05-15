@@ -22,8 +22,8 @@ const budget = {
   skirmish: [1400, 550],
   clash: [2700, 1250],
   combat: [4750, 2000],
-  battle: [6750, 4250],
-  grandbattle: [14000, 7500],
+  battle: [7450, 3850],
+  grandbattle: [14000, 6750],
 }
 
 const unitDisplayNames = {
