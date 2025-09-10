@@ -4,26 +4,26 @@ const cost = {
   line_infantry: [200, 50],
   light_infantry: [200, 75],
   guard: [300, 75],
-  grenadier: [275, 50],
-  militia: [150, 25],
+  grenadier: [250, 50],
+  militia: [100, 50],
   hussar: [75, 75],
   lancer: [100, 100],
-  dragoon: [125, 75],
-  cuirassier: [175, 100],
-  "12lb": [50, 350],
-  "8lb": [25, 275],
-  "4lb": [25, 175],
-  howitzer: [50, 200],
-  horse_artillery: [75, 225],
+  dragoon: [100, 75],
+  cuirassier: [125, 100],
+  "12lb": [50, 250],
+  "8lb": [25, 200],
+  "4lb": [25, 150],
+  howitzer: [50, 225],
+  horse_artillery: [75, 175],
 }
 
 const budget = {
   // name: [manpower, gold]
-  skirmish: [1400, 550],
-  clash: [2700, 1250],
-  combat: [4750, 2000],
-  battle: [7450, 3850],
-  grandbattle: [14000, 6750],
+  skirmish: [1100, 500],
+  clash: [2500, 1250],
+  combat: [5000, 2500],
+  battle: [8000, 4250],
+  grandbattle: [15000, 8000],
 }
 
 const unitDisplayNames = {
