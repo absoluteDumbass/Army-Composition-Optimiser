@@ -364,8 +364,8 @@ function optimizeComposition() {
         // Display optimization progress
         optimizationResult.innerHTML = `<p>The Imperial Staff is deliberating... Strategy iteration ${plyCount} (${previousPly.length} combinations)</p>`;
 
-        // If nothing found after 20 plies or solution found, stop
-        if (plyCount > 150 || hasFoundBestSolution) {
+        // If you reach 300 somethings wrong 🙏
+        if (plyCount > 300 || hasFoundBestSolution) {
             if (!hasFoundBestSolution) {
                 // Find best partial solution
                 let bestComps = [];
