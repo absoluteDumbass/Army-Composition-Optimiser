@@ -2,28 +2,32 @@
 const cost = {
   // name: [manpower, gold],
   line_infantry: [200, 50],
-  light_infantry: [200, 75],
-  guard: [300, 75],
-  grenadier: [275, 50],
-  militia: [150, 25],
-  hussar: [75, 75],
-  lancer: [100, 100],
-  dragoon: [125, 75],
-  cuirassier: [175, 100],
-  "12lb": [50, 350],
-  "8lb": [25, 275],
-  "4lb": [25, 175],
-  howitzer: [50, 200],
-  horse_artillery: [75, 225],
+  light_infantry: [225, 75],
+  guard: [275, 75],
+  grenadier: [250, 50],
+  militia: [125, 50],
+  rifles: [50, 25],
+  hussar: [100, 75],
+  lancer: [125, 75],
+  dragoon: [125, 50],
+  cuirassier: [150, 75],
+  "18lb li": [50, 175],
+  "12lb": [50, 200],
+  "10lb li": [50, 150],
+  "8lb": [25, 150],
+  "6lb": [25, 125],
+  "4lb": [25, 100],
+  howitzer: [50, 100],
+  horse_artillery: [75, 125],
+  rockets: [25, 200],
 }
 
 const budget = {
   // name: [manpower, gold]
-  skirmish: [1400, 550],
-  clash: [2700, 1250],
-  combat: [4750, 2000],
-  battle: [7450, 3850],
-  grandbattle: [14000, 6750],
+  clash: [2900, 900],
+  combat: [5400, 2150],
+  battle: [8750, 3750],
+  grandbattle: [17500, 7250],
 }
 
 const unitDisplayNames = {
@@ -32,32 +36,42 @@ const unitDisplayNames = {
     guard: "Guards",
     grenadier: "Grenadiers",
     militia: "Militia",
+    rifles: "Rifles",
     hussar: "Hussars",
     lancer: "Lancers",
     dragoon: "Dragoons",
     cuirassier: "Cuirassiers",
+    "18lb li": "18-lb Licorne",
     "12lb": "12-lb Foot Artillery",
+    "10lb li": "10-lb Licorne",
     "8lb": "8-lb Foot Artillery",
+    "6lb": "6-lb Foot Artillery",
     "4lb": "4-lb Foot Artillery",
     howitzer: "6-in Howitzers",
     horse_artillery: "4-lb Horse Artillery",
+    rockets: "Rockets"
 };
 
 // State
-let currentMode = "grandbattle";
+let currentMode = "clash";
 let composition = {
-    line_infantry: 50,
-    light_infantry: 10,
-    guard: 0,
+    line_infantry: 10,
+    light_infantry: -1,
+    guard: -1,
     militia: -1,
+    rifles: 0,
     hussar: 0,
-    lancer: 6,
-    dragoon: 4,
-    cuirassier: 7,
+    lancer: 1,
+    dragoon: 0,
+    cuirassier: 2,
+    "18lb li": 0,
     "12lb": 0,
-    "8lb": 6,
+    "10lb li": 0,
+    "8lb": 1,
+    "6lb": 0,
     howitzer: -1,
-    horse_artillery: -1,
+    horse_artillery: 1,
+    rockets: 0,
 };
 
 // DOM elements
@@ -154,7 +168,7 @@ function populateUnitsTable() {
                     </td>
                     <td>
                         <input type="checkbox" class="unit-toggle" data-unit="${unit}" ${
-            composition[unit] >= 0 ? "checked" : ""
+            composition[unit] > 0 ? "checked" : ""
         }>
                     </td>
                 `;
@@ -246,15 +260,20 @@ function resetComposition() {
         guard: 0,
         grenadier: 0,
         militia: 0,
+        rifles: 0,
         hussar: 0,
         lancer: 0,
         dragoon: 0,
         cuirassier: 0,
+        "18lb li": 0,
         "12lb": 0,
+        "10lb li": 0,
         "8lb": 0,
+        "6lb": 0,
         "4lb": 0,
         howitzer: 0,
         horse_artillery: 0,
+        rockets: 0,
     };
 
     populateUnitsTable();
@@ -346,7 +365,7 @@ function optimizeComposition() {
         optimizationResult.innerHTML = `<p>The Imperial Staff is deliberating... Strategy iteration ${plyCount} (${previousPly.length} combinations)</p>`;
 
         // If nothing found after 20 plies or solution found, stop
-        if (plyCount > 20 || hasFoundBestSolution) {
+        if (plyCount > 50 || hasFoundBestSolution) {
             if (!hasFoundBestSolution) {
                 // Find best partial solution
                 let bestComps = [];
