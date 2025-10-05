@@ -21,3 +21,11 @@ const data = {
   horse_artillery: { cost: [75, 125], name: "4-lb Horse Artillery" },
   rockets: { cost: [25, 200], name: "Rockets" }
 };
+
+const budget = {
+  // name: [manpower, gold]
+  clash: [2600, 900],
+  combat: [5400, 2150],
+  battle: [8750, 3750],
+  grandbattle: [17500, 7250],
+}
