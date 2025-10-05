@@ -18,7 +18,7 @@ const data = {
   "6lb": { cost: [25, 125], name: "6-lb Foot Artillery" },
   "4lb": { cost: [25, 100], name: "4-lb Foot Artillery" },
   howitzer: { cost: [50, 100], name: "6-in Howitzers" },
-  horse_artillery: { cost: [75, 125], name: "4-lb Horse Artillery" },
+  horse_artillery: { cost: [75, 125], name: "6-lb Horse Artillery" },
   rockets: { cost: [25, 200], name: "Rockets" }
 };
 
