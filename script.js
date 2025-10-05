@@ -11,7 +11,7 @@ let cost = {};
 let composition = {};
 
 for (let unit in data) {
-    composition[unit] = 0;
+    composition[unit] = -1;
     unitDisplayNames[unit] = data[unit].name;
     cost[unit] = data[unit].cost
 }
@@ -206,7 +206,7 @@ function updateResourcesLeft() {
 
 function resetComposition() {
     for (let unit in composition) {
-        composition[unit] = 0;
+        composition[unit] = -1;
     }
 
     populateUnitsTable();
