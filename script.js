@@ -1,11 +1,4 @@
 // Army composition data
-const budget = {
-  // name: [manpower, gold]
-  clash: [2600, 900],
-  combat: [5400, 2150],
-  battle: [8750, 3750],
-  grandbattle: [17500, 7250],
-}
 let unitDisplayNames = {};
 let cost = {};
 let composition = {};
